@@ -1,221 +1,307 @@
-
-<!-- saved from url=(0034)http://omideftekharian.fwh.is/?i=3 -->
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><script type="text/javascript">
-    var gk_isXlsx = false;
-    var gk_xlsxFileLookup = {};
-    var gk_fileData = {};
-    function filledCell(cell) {
-        return cell !== '' && cell != null;
-    }
-    function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
-
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
-
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                    row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                    headerRowIndex = 0;
-                }
-
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-    }
-</script>
-
-
-    <title>کوییز هیراگانا</title>
-    <link href="./کوییز هیراگانا_files/css2" rel="stylesheet">
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>داستان انیمه‌ای برای یادگیری هیراگانا</title>
     <style>
         body {
-            margin: 0;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: linear-gradient(135deg, #f0f4f8, #d9e2ec);
-            font-family: 'Noto Sans JP', sans-serif;
+            font-family: 'Tahoma', 'Arial', sans-serif;
+            line-height: 1.8;
+            margin: 40px;
+            background: #f9f9f9;
+            color: #333;
         }
         .container {
-            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
             background: white;
-            padding: 2rem;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
-            width: 90%;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
         }
-        #stats {
-            font-size: 24px;
-            color: #2c3e50;
-            margin-bottom: 20px;
+        h1 {
+            text-align: center;
+            color: #d63384;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #d63384;
+            padding-bottom: 15px;
+        }
+        h2 {
+            color: #0d6efd;
+            font-size: 1.5em;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            background: linear-gradient(90deg, #0d6efd, #6610f2);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        h3 {
+            color: #198754;
+            font-size: 1.3em;
+            margin-top: 25px;
+            margin-bottom: 10px;
+        }
+        .dialogue-section {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 5px solid #6610f2;
+            border-radius: 5px;
+        }
+        .character {
+            font-weight: bold;
+            color: #0d6efd;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+        .japanese {
+            font-size: 1.4em;
+            color: #333;
+            margin: 8px 0;
+            font-family: 'Yu Gothic', 'Meiryo', sans-serif;
+        }
+        .romaji {
+            font-style: italic;
+            color: #666;
+            font-size: 0.9em;
+            margin: 5px 0 15px 0;
+        }
+        .vocabulary {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 25px 0;
+        }
+        .vocab-item {
             display: flex;
             justify-content: space-between;
-        }
-        #character {
-            font-size: 64px;
-            margin: 20px 0;
-            color: #2c3e50;
-        }
-        #input {
-            padding: 10px;
-            font-size: 18px;
-            width: 80%;
-            margin-bottom: 20px;
-            border: 2px solid #3498db;
+            align-items: center;
+            margin: 10px 0;
+            padding: 8px 15px;
+            background: white;
             border-radius: 5px;
-            outline: none;
-            transition: border-color 0.3s;
+            border-left: 4px solid #2196f3;
         }
-        #input:focus {
-            border-color: #2980b9;
-        }
-        #next {
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #3498db;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        #next:hover {
-            background-color: #2980b9;
-        }
-        #feedback {
-            color: #e74c3c;
+        .vocab-japanese {
+            font-size: 1.2em;
             font-weight: bold;
-            margin-top: 10px;
-            font-size: 18px;
+            color: #1976d2;
         }
-        @media (max-width: 600px) {
+        .vocab-meaning {
+            color: #666;
+        }
+        .tips {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #ffeaa7;
+            margin: 25px 0;
+        }
+        .tip-item {
+            margin: 10px 0;
+            color: #856404;
+        }
+        .emoji {
+            font-size: 1.2em;
+            margin-left: 10px;
+        }
+        @media print {
+            body {
+                background: white;
+            }
             .container {
-                padding: 1.5rem;
-            }
-            #character {
-                font-size: 48px;
-            }
-            #stats {
-                font-size: 20px;
+                box-shadow: none;
+                margin: 0;
+                padding: 20px;
             }
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <div id="stats">
-        <span id="score">امتیاز: 0</span>
-        <span id="wrong">غلط: 0</span>
+    <div class="container">
+        <h1>🌸 داستان انیمه‌ای برای یادگیری هیراگانا 🌸</h1>
+
+        <div class="dialogue-section">
+            <h2>قسمت اول: ملاقات</h2>
+            
+            <p><span class="character">کیمی:</span></p>
+            <p class="japanese">あ！</p>
+            <p class="romaji">*a!*</p>
+            <p>(آه!)</p>
+
+            <p><span class="character">سومی:</span></p>
+            <p class="japanese">え？</p>
+            <p class="romaji">*e?*</p>
+            <p>(هه؟)</p>
+
+            <p><span class="character">کیمی:</span></p>
+            <p class="japanese">きみ は だれ？</p>
+            <p class="romaji">*kimi wa dare?*</p>
+            <p>(تو کی هستی؟)</p>
+
+            <p><span class="character">سومی:</span></p>
+            <p class="japanese">わたし は すみ です</p>
+            <p class="romaji">*watashi wa sumi desu*</p>
+            <p>(من سومی هستم)</p>
+
+            <p><span class="character">کیمی:</span></p>
+            <p class="japanese">すき です！</p>
+            <p class="romaji">*suki desu!*</p>
+            <p>(دوست دارم!)</p>
+        </div>
+
+        <div class="dialogue-section">
+            <h2>قسمت دوم: ماجراجویی</h2>
+            
+            <p><span class="character">سومی:</span></p>
+            <p class="japanese">うみ へ いく？</p>
+            <p class="romaji">*umi he iku?*</p>
+            <p>(به دریا می‌ری؟)</p>
+
+            <p><span class="character">کیمی:</span></p>
+            <p class="japanese">はい！</p>
+            <p class="romaji">*hai!*</p>
+            <p>(بله!)</p>
+
+            <p><span class="character">سومی:</span></p>
+            <p class="japanese">あそこ に おに が いる</p>
+            <p class="romaji">*asoko ni oni ga iru*</p>
+            <p>(آنجا اونی هست)</p>
+
+            <p><span class="character">کیمی:</span></p>
+            <p class="japanese">え！おに？</p>
+            <p class="romaji">*e! oni?*</p>
+            <p>(هه! اونی؟)</p>
+
+            <p><span class="character">سومی:</span></p>
+            <p class="japanese">そう です</p>
+            <p class="romaji">*sou desu*</p>
+            <p>(درسته)</p>
+        </div>
+
+        <div class="dialogue-section">
+            <h2>قسمت سوم: مواجهه</h2>
+            
+            <p><span class="character">اونی:</span></p>
+            <p class="japanese">おお！</p>
+            <p class="romaji">*oo!*</p>
+            <p>(اوه!)</p>
+
+            <p><span class="character">کیمی:</span></p>
+            <p class="japanese">こわい！</p>
+            <p class="romaji">*kowai!*</p>
+            <p>(ترسناکه!)</p>
+
+            <p><span class="character">سومی:</span></p>
+            <p class="japanese">いえ、やさしい おに です</p>
+            <p class="romaji">*ie, yasashii oni desu*</p>
+            <p>(نه، اونی مهربونیه)</p>
+
+            <p><span class="character">اونی:</span></p>
+            <p class="japanese">はい、わたし は いい おに</p>
+            <p class="romaji">*hai, watashi wa ii oni*</p>
+            <p>(بله، من اونی خوبی هستم)</p>
+
+            <p><span class="character">کیمی:</span></p>
+            <p class="japanese">ほんとう？</p>
+            <p class="romaji">*hontou?*</p>
+            <p>(واقعا؟)</p>
+
+            <p><span class="character">اونی:</span></p>
+            <p class="japanese">はい！すし を つくる</p>
+            <p class="romaji">*hai! sushi wo tsukuru*</p>
+            <p>(بله! سوشی درست می‌کنم)</p>
+        </div>
+
+        <div class="dialogue-section">
+            <h2>قسمت چهارم: دوستی</h2>
+            
+            <p><span class="character">سومی:</span></p>
+            <p class="japanese">すごい！</p>
+            <p class="romaji">*sugoi!*</p>
+            <p>(فوق‌العاده!)</p>
+
+            <p><span class="character">کیمی:</span></p>
+            <p class="japanese">おいしい すし！</p>
+            <p class="romaji">*oishii sushi!*</p>
+            <p>(سوشی خوشمزه!)</p>
+
+            <p><span class="character">اونی:</span></p>
+            <p class="japanese">ありがとう</p>
+            <p class="romaji">*arigatou*</p>
+            <p>(ممنون)</p>
+
+            <p><span class="character">همه با هم:</span></p>
+            <p class="japanese">ともだち！</p>
+            <p class="romaji">*tomodachi!*</p>
+            <p>(دوست!)</p>
+        </div>
+
+        <div class="vocabulary">
+            <h3>کلمات کلیدی برای یادگیری:</h3>
+            
+            <div class="vocab-item">
+                <span class="vocab-japanese">すき (suki)</span>
+                <span class="vocab-meaning">دوست داشتن</span>
+            </div>
+            <div class="vocab-item">
+                <span class="vocab-japanese">きみ (kimi)</span>
+                <span class="vocab-meaning">تو</span>
+            </div>
+            <div class="vocab-item">
+                <span class="vocab-japanese">はい (hai)</span>
+                <span class="vocab-meaning">بله</span>
+            </div>
+            <div class="vocab-item">
+                <span class="vocab-japanese">いえ (ie)</span>
+                <span class="vocab-meaning">نه</span>
+            </div>
+            <div class="vocab-item">
+                <span class="vocab-japanese">おに (oni)</span>
+                <span class="vocab-meaning">اونی/دیو</span>
+            </div>
+            <div class="vocab-item">
+                <span class="vocab-japanese">うみ (umi)</span>
+                <span class="vocab-meaning">دریا</span>
+            </div>
+            <div class="vocab-item">
+                <span class="vocab-japanese">すし (sushi)</span>
+                <span class="vocab-meaning">سوشی</span>
+            </div>
+            <div class="vocab-item">
+                <span class="vocab-japanese">そう (sou)</span>
+                <span class="vocab-meaning">درسته</span>
+            </div>
+            <div class="vocab-item">
+                <span class="vocab-japanese">あ (a)</span>
+                <span class="vocab-meaning">آه (تعجب)</span>
+            </div>
+            <div class="vocab-item">
+                <span class="vocab-japanese">え (e)</span>
+                <span class="vocab-meaning">هه؟ (سؤال)</span>
+            </div>
+            <div class="vocab-item">
+                <span class="vocab-japanese">お (o)</span>
+                <span class="vocab-meaning">اوه (تعجب)</span>
+            </div>
+        </div>
+
+        <div class="tips">
+            <h3>نکات یادگیری:</h3>
+            <div class="tip-item">
+                <span class="emoji">🎌</span> هر کلمه را با صدای بلند تکرار کنید
+            </div>
+            <div class="tip-item">
+                <span class="emoji">🎌</span> حروف را در هوا بنویسید
+            </div>
+            <div class="tip-item">
+                <span class="emoji">🎌</span> با انیمه‌هایی که دیده‌اید ارتباط دهید
+            </div>
+        </div>
     </div>
-    <div id="character">そ</div>
-    <input type="text" id="input">
-    <button id="next">بعدی</button>
-    <div id="feedback" style="display: none;">اشتباه بود</div>
-</div>
-
-<script>
-    const characters = [
-        { hiragana: "け", romaji: "ke" },
-        { hiragana: "こ", romaji: "ko" },
-        { hiragana: "さ", romaji: "sa" },
-        { hiragana: "し", romaji: "shi" },
-        { hiragana: "す", romaji: "su" },
-        { hiragana: "せ", romaji: "se" },
-        { hiragana: "そ", romaji: "so" },
-        { hiragana: "ち", romaji: "chi" },
-        { hiragana: "つ", romaji: "tsu" },
-        { hiragana: "て", romaji: "te" },
-        { hiragana: "と", romaji: "to" },
-        { hiragana: "な", romaji: "na" },
-        { hiragana: "に", romaji: "ni" },
-        { hiragana: "ぬ", romaji: "nu" },
-        { hiragana: "は", romaji: "ha" },
-        { hiragana: "ひ", romaji: "hi" },
-        //ふ
-        { hiragana: "ふ", romaji: "fu" },
-        //へ
-        { hiragana: "へ", romaji: "he" },
-        //ほ
-        { hiragana: "ほ", romaji: "ho" },
-        //ま
-        { hiragana: "ま", romaji: "ma" },
-        //み
-        { hiragana: "み", romaji: "mi" },
-        //む
-        { hiragana: "む", romaji: "mu" },
-        //め
-        { hiragana: "め", romaji: "me" },
-        //も
-        { hiragana: "も", romaji: "mo" }
-    ];
-
-    let score = 0;
-    let wrongCount = 0;
-
-    function updateStatsDisplay() {
-        document.getElementById("score").textContent = `امتیاز: ${score}`;
-        document.getElementById("wrong").textContent = `غلط: ${wrongCount}`;
-    }
-
-    function getRandomCharacter() {
-        return characters[Math.floor(Math.random() * characters.length)];
-    }
-
-    let currentCharacter = getRandomCharacter();
-    document.getElementById("character").textContent = currentCharacter.hiragana;
-    document.getElementById("input").focus();
-
-    document.getElementById("next").addEventListener("click", function() {
-        const userInput = document.getElementById("input").value.trim().toLowerCase();
-        const correctRomaji = currentCharacter.romaji.toLowerCase();
-        const isCorrect = userInput === correctRomaji;
-
-        if (isCorrect) {
-            score += 1;
-        } else {
-            score -= 1;
-            wrongCount += 1;
-            document.getElementById("feedback").style.display = "block";
-            setTimeout(function() {
-                document.getElementById("feedback").style.display = "none";
-            }, 1000);
-        }
-
-        updateStatsDisplay();
-        currentCharacter = getRandomCharacter();
-        updateCharacter();
-    });
-
-    document.getElementById("input").addEventListener("keypress", function(event) {
-        if (event.key === "Enter") {
-            document.getElementById("next").click();
-        }
-    });
-
-    function updateCharacter() {
-        document.getElementById("character").textContent = currentCharacter.hiragana;
-        document.getElementById("input").value = "";
-        document.getElementById("input").focus();
-    }
-</script>
-
-</body></html>
+</body>
+</html> 
+                
